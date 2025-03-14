@@ -8,7 +8,7 @@ export const web3auth = new Web3Auth({
     chainId: "0x1", // Ethereum mainnet
     rpcTarget: "https://rpc.ankr.com/eth",
   },
-  web3AuthNetwork: "cyan",
+  web3AuthNetwork: "sapphire_devnet",
 });
 
 export const initWeb3Auth = async () => {
