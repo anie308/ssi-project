@@ -9,12 +9,25 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@walletconnect/sign-client": "^2.19.1",
+    "@web3auth/base": "^7.2.1",
+    "@web3auth/modal": "^7.2.1",
+    "clsx": "^2.1.0",
+    "ethers": "^6.11.1",
+    "framer-motion": "^12.5.0",
+    "js-cookie": "^3.0.5",
+    "lucide-react": "^0.344.0",
+    "next": "15.2.2",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
-    "next": "15.2.2"
+    "react-qr-code": "^2.0.12",
+    "react-router-dom": "^6.22.2",
+    "react-webcam": "^7.2.0",
+    "tailwind-merge": "^2.2.1"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
+    "@types/react": "19.0.10",
     "tailwindcss": "^4"
   }
 }
