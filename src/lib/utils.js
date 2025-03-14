@@ -17,6 +17,7 @@ export function AuthProvider({ children }) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [user, setUser] = useState(null);
+  const [walletInfo, setWalletInfo] = useState(null);
   const router = useRouter();
   useEffect(() => {
     const initAuth = async () => {
@@ -29,6 +30,11 @@ export function AuthProvider({ children }) {
           const parsedUser = JSON.parse(savedUser);
           setUser(parsedUser);
           setIsAuthenticated(true);
+        }
+
+        const savedWallet = Cookies.get('wallet');
+        if (savedWallet) {
+          setWalletInfo(JSON.parse(savedWallet));
         }
         // router.push('/dashboard');
       } catch (error) {
@@ -46,8 +52,34 @@ export function AuthProvider({ children }) {
       const web3authProvider = await web3auth.connect();
       if (web3authProvider) {
         const user = await web3auth.getUserInfo();
+
+        const accounts = await web3auth.provider.request({
+          method: "eth_accounts"
+        });
+        
+        const walletAddress = accounts[0];
+        
+        // Optional: Get private key (be careful with this!)
+        // const privateKey = await web3auth.provider.request({
+        //   method: "eth_private_key"
+        // });
+        
+        const wallet = {
+          address: walletAddress,
+          provider: web3authProvider
+        };
+
+
         setUser(user);
         setIsAuthenticated(true);
+        setWalletInfo(wallet);
+
+
+        // Save user and wallet info to cookies
+        Cookies.set('user', JSON.stringify(user), { expires: 7 });
+        Cookies.set('wallet', JSON.stringify({ address: walletAddress }), { expires: 7 });
+
+
         router.push('/dashboard');
       }
     } catch (error) {
@@ -60,15 +92,46 @@ export function AuthProvider({ children }) {
     try {
       await web3auth.logout();
       setUser(null);
+      setWalletInfo(null);
       setIsAuthenticated(false);
+
+      // Remove user and wallet info from cookies
+      Cookies.remove('user');
+      Cookies.remove('wallet');
       router.push('/');
     } catch (error) {
       console.error("Error logging out:", error);
     }
   };
 
+
+  const getBalance = async () => {
+    if (!isAuthenticated || !web3auth.provider) {
+      throw new Error("Not authenticated");
+    }
+    
+    try {
+      const accounts = await web3auth.provider.request({
+        method: "eth_accounts"
+      });
+      
+      const balance = await web3auth.provider.request({
+        method: "eth_getBalance",
+        params: [accounts[0], "latest"],
+      });
+      
+      // Convert from wei (hex) to ETH
+      const ethBalance = parseInt(balance, 16) / 1e18;
+      return ethBalance;
+    } catch (error) {
+      console.error("Failed to get balance:", error);
+      throw error;
+    }
+  };
+
+
   return (
-    <AuthContext.Provider value={{ isAuthenticated, isLoading, user, login, logout }}>
+    <AuthContext.Provider value={{ isAuthenticated, isLoading, user, login, getBalance,  wallet: walletInfo, logout }}>
       {children}
     </AuthContext.Provider>
   );}
